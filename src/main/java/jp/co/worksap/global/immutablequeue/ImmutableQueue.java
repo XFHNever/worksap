@@ -1,26 +1,31 @@
 package jp.co.worksap.global.immutablequeue;
 
-import java.lang.reflect.Array;
+import org.apache.log4j.Logger;
+
 import java.util.NoSuchElementException;
 
 /**
- * Created by never on 2014/9/23.
+ * Created by never on 2014/9/24.
  */
 public class ImmutableQueue<E> {
-    private E[] queue;
-    private int size;
+    private static final Logger LOG = Logger.getLogger(ImmutableQueue.class);
+
+    private ImmutableStack<E> forwards;
+    private ImmutableStack<E> backwards;
+
     /**
      * constructor
      */
     public ImmutableQueue() {
-        this.queue = null;
-        this.size = 0;
+        this.forwards = new ImmutableStack<E>();
+        this.backwards = new ImmutableStack<E>();
     }
 
-    public ImmutableQueue(E[] queue) {
-        this.queue = queue;
-        this.size = queue.length;
+    public ImmutableQueue(ImmutableStack<E> forwards, ImmutableStack<E> backwards) {
+        this.forwards = forwards;
+        this.backwards = backwards;
     }
+
 
     /**
      * Returns the queue that adds an item into the tail of this queue without modifying this queue.
@@ -29,16 +34,14 @@ public class ImmutableQueue<E> {
      * @return
      * @throws java.lang.IllegalArgumentException
      */
-    public ImmutableQueue<E> enqueue(E e) {
+    public ImmutableQueue<E> enqueue(E e){
+        LOG.debug("enqueue Element: " + e.toString() + ", without modifying this queue!");
+
         if (e == null) {
             throw new IllegalArgumentException();
         }
 
-        E[] cloneQueue = (E[]) Array.newInstance(e.getClass(), size + 1);
-        cloneQueue[0] = e;
-        System.arraycopy(this.queue, 0, cloneQueue, 1, size);
-
-        return new ImmutableQueue<E>(cloneQueue);
+        return new ImmutableQueue<E>(forwards, backwards.push(e));
     }
 
     /**
@@ -48,14 +51,24 @@ public class ImmutableQueue<E> {
      * throws java.util.NoSuchElementException.
      */
     public ImmutableQueue<E> dequeue() {
-        if (this.size <= 0) {
+        LOG.debug("dequeue without modifying this queue!");
+
+        if (forwards.isEmpty() && backwards.isEmpty()) {
             throw new NoSuchElementException();
         }
 
-        E[] cloneQueue = (E[]) new Object[size - 1];
-        System.arraycopy(this.queue, 0, cloneQueue, 0, size - 1);
+        ImmutableStack<E> stack = null;
+        if (!forwards.isEmpty()) {
+            forwards.pop();
+        }
 
-        return new ImmutableQueue<E>(cloneQueue);
+        if (stack != null && !stack.isEmpty()) {
+            return new ImmutableQueue<E>(stack, backwards);
+        } else if (backwards.isEmpty()) {
+            return new ImmutableQueue();
+        } else {
+            return new ImmutableQueue<E>(backwards.reverse(), new ImmutableStack<E>());
+        }
     }
 
     /**
@@ -65,11 +78,16 @@ public class ImmutableQueue<E> {
      * throws java.util.NoSuchElementException.
      */
     public E peek() {
-        if (this.size <= 0) {
+        LOG.debug("Looks at the object which is the head of this queue without removing it from the queue");
+
+        if (forwards.isEmpty() && backwards.isEmpty()) {
             throw new NoSuchElementException();
         }
 
-        return queue[size - 1];
+        if (forwards.isEmpty()) {
+            return backwards.reverse().peek();
+        }
+        return forwards.peek();
     }
 
     /**
@@ -77,6 +95,8 @@ public class ImmutableQueue<E> {
      * @return
      */
     public int size() {
-        return this.size;
+        LOG.debug("get the size of the queue");
+
+        return forwards.size() + backwards.size();
     }
 }

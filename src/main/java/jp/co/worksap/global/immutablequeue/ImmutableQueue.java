@@ -35,7 +35,7 @@ public class ImmutableQueue<E> {
      * @throws java.lang.IllegalArgumentException
      */
     public ImmutableQueue<E> enqueue(E e){
-        LOG.debug("enqueue Element: " + e.toString() + ", without modifying this queue!");
+        LOG.debug("enqueue Element: " + e + ", without modifying this queue!");
 
         if (e == null) {
             throw new IllegalArgumentException();

@@ -3,6 +3,8 @@ package jp.co.worksap.global.immutablequeue;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.NoSuchElementException;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -37,6 +39,14 @@ public class AnotherImmutableQueueTest {
         assertEquals(cloneQueue, oldQueue);
     }
 
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEnqueueException() throws Exception {
+        oldQueue.enqueue(null);
+    }
+
+
     @Test
     public void testDequeue() throws Exception {
         long startTime = System.currentTimeMillis();
@@ -45,6 +55,12 @@ public class AnotherImmutableQueueTest {
         System.out.println("run method dequeue() consumes£º " + (endTime - startTime) + "ms");
 
         assertEquals(cloneQueue, oldQueue);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testDequeueException() throws Exception {
+        ImmutableQueue<String> emptyQueue = new ImmutableQueue<String>();
+        emptyQueue.dequeue();
     }
 
     @Test
@@ -56,5 +72,11 @@ public class AnotherImmutableQueueTest {
 
         assertEquals("queue999999", peekStr);
         assertEquals(cloneQueue, oldQueue);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testPeekException() throws Exception {
+        ImmutableQueue<String> emptyQueue = new ImmutableQueue<String>();
+        emptyQueue.peek();
     }
 }
